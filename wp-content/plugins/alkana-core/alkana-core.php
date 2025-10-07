@@ -211,3 +211,33 @@ add_action('save_post_distributor', function($post_id){
         if (isset($_POST[$f])) update_post_meta($post_id, $f, sanitize_text_field(wp_unslash($_POST[$f])));
     }
 });
+
+// Apply GET filters (application/substrate) on archives
+add_action('pre_get_posts', function($q){
+    if (is_admin() || !$q->is_main_query()) return;
+    $is_projects = (function_exists('is_post_type_archive') && (is_post_type_archive('project')));
+    $is_distributors = (function_exists('is_post_type_archive') && (is_post_type_archive('distributor')));
+    $is_tax = (function_exists('is_tax') && (is_tax('application') || is_tax('substrate')));
+    if (!$is_projects && !$is_distributors && !$is_tax) return;
+
+    $tax_query = (array)$q->get('tax_query');
+    if (!empty($_GET['application']) && $_GET['application'] !== '0') {
+        $slug = sanitize_text_field(wp_unslash($_GET['application']));
+        $tax_query[] = [
+            'taxonomy' => 'application',
+            'field'    => 'slug',
+            'terms'    => [$slug],
+        ];
+    }
+    if (!empty($_GET['substrate']) && $_GET['substrate'] !== '0') {
+        $slug = sanitize_text_field(wp_unslash($_GET['substrate']));
+        $tax_query[] = [
+            'taxonomy' => 'substrate',
+            'field'    => 'slug',
+            'terms'    => [$slug],
+        ];
+    }
+    if (!empty($tax_query)) {
+        $q->set('tax_query', $tax_query);
+    }
+});
