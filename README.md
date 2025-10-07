@@ -154,7 +154,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: FTP Deploy
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
@@ -174,6 +174,15 @@ Set repository secrets in GitHub: `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD`. If
 ## Notes
 
 - The MU plugin is safe-by-default. Some aggressive optimizations are toggled via constants at the top of the file; read comments before enabling.
+
+## Site-building quick notes
+
+- Set Homepage: after activating Alkana Core, a "Home" page is created and set as the static homepage. You can edit it in Pages → Home. Alternatively, go to Settings → Reading to choose a different page.
+- Menus: go to Appearance → Menus (or Appearance → Editor in block themes) and assign your primary menu to the "Primary" location. Footer menu uses the "Footer" location.
+- Projects & Distributors: add items under the new post types. Use Applications/Substrates taxonomies to categorize. Archives are at `/projects/` and `/distributors/`. Taxonomy views are at `/application/{term}` and `/substrate/{term}`.
+- Filtering: on projects/distributors archives, simple dropdown filters by Application/Substrate are included—select and submit to filter.
+- Contact form: place the shortcode `[alkana_contact_form]` on any page (e.g., Contact). By default it sends to the site admin email; you can override recipient: `[alkana_contact_form to="sales@yourdomain.com"]`.
+- Templates: base templates exist for pages, singles, archives, search, and 404. Reusable cards live in `template-parts/content-card.php`.
 
 ---
 
