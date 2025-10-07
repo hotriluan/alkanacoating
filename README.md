@@ -178,3 +178,4 @@ Set repository secrets in GitHub: `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD`. If
 ---
 
 © 2025 Alkana Coating – Starter skeleton prepared for high performance on shared/cloud hosting.
+© 2025 Alkana Coating – Starter skeleton prepared for high performance on shared/cloud hosting.
