@@ -1,0 +1,39 @@
+name: Deploy wp-content to Hosting
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "wp-content/**"
+      - ".github/workflows/deploy.yml"
+
+concurrency:
+  group: deploy-wp-content
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          # Local directory to upload
+          local-dir: wp-content/
+          # Remote directory (adjust if your docroot differs)
+          server-dir: public_html/wp-content/
+          # Safety: do not wipe server-side files not in the repo
+          dangerous-clean-slate: false
+          exclude: |
+            uploads/**
+            **/.git*
+            **/.DS_Store
+            **/Thumbs.db

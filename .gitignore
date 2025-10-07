@@ -1,0 +1,15 @@
+# WordPress core
+/wp-admin/
+/wp-includes/
+/index.php
+/wp-config.php
+/.htaccess
+
+# Vendor/build
+node_modules/
+vendor/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
