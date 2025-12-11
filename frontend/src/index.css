@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom components */
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-md bg-brand-600 text-white px-4 py-2 font-semibold hover:bg-brand-700 transition;
+}
+
+/* Brand gradient backgrounds */
+.bg-brand-gradient {
+  @apply bg-gradient-to-r from-brand-600 to-brand-500;
+}
+
+.bg-brand-gradient-light {
+  @apply bg-gradient-to-br from-brand-100 to-brand-200;
+}

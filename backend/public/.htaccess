@@ -1,0 +1,71 @@
+# Alkana Coating - SPA + API Combined Deployment (root)
+# Place at web root (where index.html is)
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Pass Authorization header to PHP
+    RewriteCond %{HTTP:Authorization} . 
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Serve existing files and directories directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Allow installer access during installation (temporary)
+    # Keep while installing; remove or restrict after install
+    RewriteRule ^installer\.php$ - [L]
+
+    # API requests -> Laravel index.php
+    RewriteRule ^api/ index.php [L,QSA]
+
+    # Health check & optimize
+    RewriteRule ^(health-check|optimize)\.php$ - [L]
+
+    # Everything else -> SPA index.html
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    # HSTS (enable only if site is HTTPS and you are ready for HTTPS-only)
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>
+
+# CORS for API — allow your production origin (and localhost for dev)
+<IfModule mod_headers.c>
+    SetEnvIf Origin "^https?://(www\.)?(hotriluan\.xyz)(:[0-9]+)?$" ORIGIN_ALLOWED=$0
+    SetEnvIf Origin "^https?://(localhost|127\\.0\\.1)(:[0-9]+)?$" ORIGIN_ALLOWED_LOCAL=$0
+    Header set Access-Control-Allow-Origin "%{ORIGIN_ALLOWED}e" env=ORIGIN_ALLOWED
+    Header set Access-Control-Allow-Origin "%{ORIGIN_ALLOWED_LOCAL}e" env=ORIGIN_ALLOWED_LOCAL
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    Header set Access-Control-Allow-Credentials "true"
+</IfModule>
+
+# Cache static assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+</IfModule>
+
+# Protect sensitive files
+<FilesMatch "(\.env|\.env\..*|composer\.lock|composer\.json|package\.json|package-lock\.json)$">
+    Require all denied
+</FilesMatch>

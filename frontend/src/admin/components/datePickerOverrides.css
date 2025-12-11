@@ -1,0 +1,47 @@
+/* React DatePicker visual polish for inline calendar + time list */
+.react-datepicker {
+  display: flex;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.react-datepicker__month-container {
+  padding: 6px 10px 10px 10px;
+}
+
+.react-datepicker__header {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb; /* gray-200 */
+  padding-top: 8px;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header {
+  font-weight: 600;
+  color: #111827; /* gray-900 */
+}
+
+/* Day cells */
+.react-datepicker__day,
+.react-datepicker__day-name {
+  width: 2.25rem;
+  line-height: 2.25rem;
+  margin: 0.125rem;
+}
+
+/* Time panel */
+.react-datepicker__time-container {
+  width: 120px;
+  border-left: 1px solid #e5e7eb; /* gray-200 */
+}
+
+.react-datepicker__time-box {
+  width: 100%;
+}
+
+.react-datepicker__time-list {
+  height: 240px; /* comfortable height */
+}
+
+/* Footer buttons area inside our wrapper is outside of DatePicker */

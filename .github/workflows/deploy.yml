@@ -1,0 +1,133 @@
+name: Deploy Alkana Coating
+
+on:
+  push:
+    branches: [ main, production ]
+  workflow_dispatch:  # Cho phép chạy manual
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: 🔧 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, pdo, pdo_mysql, gd, imagick, fileinfo, zip
+        
+    - name: 📦 Install Frontend Dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: 🎨 Build Frontend
+      working-directory: ./frontend
+      run: npm run build
+      
+    - name: 📦 Install Backend Dependencies
+      working-directory: ./backend
+      run: composer install --no-dev --optimize-autoloader
+      
+    - name: 🧪 Run Tests (Optional)
+      working-directory: ./backend
+      run: |
+        cp .env.example .env
+        php artisan key:generate
+        php artisan test || true
+        
+    - name: 📦 Create Deployment Package
+      run: |
+        mkdir -p deploy-package
+        
+        # Copy backend (exclude dev files)
+        rsync -av --exclude='node_modules' --exclude='.git' --exclude='tests' \
+              --exclude='storage/logs/*' --exclude='storage/framework/cache/*' \
+              backend/ deploy-package/backend/
+        
+        # Copy frontend build
+        cp -r frontend/dist deploy-package/frontend
+        
+        # Copy deployment files
+        cp deploy.php deploy-package/
+        cp DEPLOYMENT_GUIDE.md deploy-package/
+        
+        # Create .htaccess files
+        echo '<IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteRule ^ index.php [L]
+        </IfModule>' > deploy-package/backend/public/.htaccess
+        
+        echo '<IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            RewriteRule ^index\.html$ - [L]
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule . /index.html [L]
+        </IfModule>' > deploy-package/frontend/.htaccess
+        
+    - name: 📦 Create ZIP Archive
+      run: |
+        cd deploy-package
+        zip -r ../alkana-coating-${{ github.sha }}.zip .
+        cd ..
+        cp alkana-coating-${{ github.sha }}.zip alkana-coating-latest.zip
+        
+    - name: 📤 Deploy to Hosting via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./deploy-package/
+        server-dir: ./
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.env
+          
+    - name: 🔄 Run Remote Migrations (via SSH)
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        script: |
+          cd ${{ secrets.DEPLOY_PATH }}/backend
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          
+    - name: 📊 Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: alkana-coating-build
+        path: alkana-coating-latest.zip
+        retention-days: 30
+        
+    - name: 🎉 Deployment Success Notification
+      if: success()
+      run: |
+        echo "✅ Deployment thành công!"
+        echo "📦 Package: alkana-coating-${{ github.sha }}.zip"
+        echo "🌐 URL: https://alkanacoating.com"
+        
+    - name: ❌ Deployment Failed Notification
+      if: failure()
+      run: |
+        echo "❌ Deployment thất bại!"
+        echo "📋 Kiểm tra logs để biết thêm chi tiết"

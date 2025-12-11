@@ -1,0 +1,46 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - heading "Admin Panel" [level=2] [ref=e6]
+    - navigation [ref=e7]:
+      - link "📊 Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: /admin
+        - generic [ref=e9]: 📊
+        - text: Dashboard
+      - link "📦 Sản phẩm" [ref=e10] [cursor=pointer]:
+        - /url: /admin/products
+        - generic [ref=e11]: 📦
+        - text: Sản phẩm
+      - link "📁 Danh mục" [ref=e12] [cursor=pointer]:
+        - /url: /admin/categories
+        - generic [ref=e13]: 📁
+        - text: Danh mục
+      - link "🖼️ Slider" [ref=e14] [cursor=pointer]:
+        - /url: /admin/sliders
+        - generic [ref=e15]: 🖼️
+        - text: Slider
+      - link "📋 Menu" [ref=e16] [cursor=pointer]:
+        - /url: /admin/menus
+        - generic [ref=e17]: 📋
+        - text: Menu
+      - link "🏗️ Dự án" [ref=e18] [cursor=pointer]:
+        - /url: /admin/projects
+        - generic [ref=e19]: 🏗️
+        - text: Dự án
+      - link "📝 Bài viết" [ref=e20] [cursor=pointer]:
+        - /url: /admin/posts
+        - generic [ref=e21]: 📝
+        - text: Bài viết
+      - link "👥 Tuyển dụng" [ref=e22] [cursor=pointer]:
+        - /url: /admin/recruitments
+        - generic [ref=e23]: 👥
+        - text: Tuyển dụng
+  - generic [ref=e24]:
+    - banner [ref=e25]:
+      - generic [ref=e26]:
+        - heading "Hệ thống quản trị Alkana Coating" [level=1] [ref=e27]
+        - button "Đăng xuất" [ref=e28] [cursor=pointer]
+    - main [ref=e29]
+```

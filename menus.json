@@ -1,0 +1,96 @@
+﻿{
+    "value":  [
+                  {
+                      "id":  1,
+                      "name":  "Trang chủ",
+                      "url":  "/",
+                      "parent_id":  null,
+                      "order":  1,
+                      "is_active":  true,
+                      "created_at":  "2025-10-20T03:53:39.000000Z",
+                      "updated_at":  "2025-10-20T03:53:39.000000Z",
+                      "children":  [
+
+                                   ]
+                  },
+                  {
+                      "id":  2,
+                      "name":  "Giới thiệu",
+                      "url":  "/gioi-thieu",
+                      "parent_id":  null,
+                      "order":  2,
+                      "is_active":  true,
+                      "created_at":  "2025-10-20T03:53:39.000000Z",
+                      "updated_at":  "2025-10-20T03:53:39.000000Z",
+                      "children":  [
+
+                                   ]
+                  },
+                  {
+                      "id":  3,
+                      "name":  "Sản phẩm",
+                      "url":  "/san-pham",
+                      "parent_id":  null,
+                      "order":  3,
+                      "is_active":  true,
+                      "created_at":  "2025-10-20T03:53:39.000000Z",
+                      "updated_at":  "2025-10-20T03:53:39.000000Z",
+                      "children":  [
+
+                                   ]
+                  },
+                  {
+                      "id":  4,
+                      "name":  "Dự án",
+                      "url":  "/du-an",
+                      "parent_id":  null,
+                      "order":  4,
+                      "is_active":  true,
+                      "created_at":  "2025-10-20T03:53:39.000000Z",
+                      "updated_at":  "2025-10-20T03:53:39.000000Z",
+                      "children":  [
+
+                                   ]
+                  },
+                  {
+                      "id":  5,
+                      "name":  "Bài viết",
+                      "url":  "/bai-viet",
+                      "parent_id":  null,
+                      "order":  5,
+                      "is_active":  true,
+                      "created_at":  "2025-10-20T03:53:39.000000Z",
+                      "updated_at":  "2025-10-20T03:53:39.000000Z",
+                      "children":  [
+
+                                   ]
+                  },
+                  {
+                      "id":  6,
+                      "name":  "Tuyển dụng",
+                      "url":  "/tuyen-dung",
+                      "parent_id":  null,
+                      "order":  6,
+                      "is_active":  true,
+                      "created_at":  "2025-10-20T03:53:39.000000Z",
+                      "updated_at":  "2025-10-20T03:53:39.000000Z",
+                      "children":  [
+
+                                   ]
+                  },
+                  {
+                      "id":  7,
+                      "name":  "Liên hệ",
+                      "url":  "/lien-he",
+                      "parent_id":  null,
+                      "order":  7,
+                      "is_active":  true,
+                      "created_at":  "2025-10-20T03:53:39.000000Z",
+                      "updated_at":  "2025-10-20T03:53:39.000000Z",
+                      "children":  [
+
+                                   ]
+                  }
+              ],
+    "Count":  7
+}

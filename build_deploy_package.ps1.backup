@@ -1,0 +1,236 @@
+# Build and Deploy Package Script for Alkana Coating
+# This script automates the process of creating a deployment zip for Mat Bao hosting
+
+$ErrorActionPreference = "Stop"
+
+# Configuration
+$DB_NAME = "alkanacoating"
+$DB_USER = "root"
+$DB_PASS = "" # Default XAMPP password is empty
+$MYSQLDUMP_PATH = "C:\xampp\mysql\bin\mysqldump.exe"
+$BACKEND_DIR = Join-Path $PSScriptRoot "backend"
+$FRONTEND_DIR = Join-Path $PSScriptRoot "frontend"
+$OUTPUT_DIR = Join-Path $PSScriptRoot "deploy_temp"
+$ZIP_FILE = Join-Path $PSScriptRoot "alkana-coating.zip"
+
+Write-Host "Starting deployment package creation..." -ForegroundColor Green
+
+# 1. Database Export
+Write-Host "1. Exporting database..." -ForegroundColor Cyan
+if (Test-Path $MYSQLDUMP_PATH) {
+    $SQL_FILE = Join-Path $BACKEND_DIR "alkanacoating_production.sql"
+    & $MYSQLDUMP_PATH -u $DB_USER $DB_NAME > $SQL_FILE
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Database exported successfully to $SQL_FILE" -ForegroundColor Green
+    } else {
+        Write-Error "Database export failed!"
+    }
+} else {
+    Write-Warning "mysqldump not found at $MYSQLDUMP_PATH. Skipping database export. Please export manually."
+}
+
+# 2. Frontend Build
+Write-Host "2. Building frontend..." -ForegroundColor Cyan
+Push-Location $FRONTEND_DIR
+try {
+    Write-Host "Installing frontend dependencies..."
+    npm install
+    Write-Host "Building frontend..."
+    npm run build
+} finally {
+    Pop-Location
+}
+
+# 3. Prepare Backend & Integrate Frontend
+Write-Host "3. Preparing files..." -ForegroundColor Cyan
+if (Test-Path $OUTPUT_DIR) { Remove-Item $OUTPUT_DIR -Recurse -Force }
+New-Item -ItemType Directory -Path $OUTPUT_DIR | Out-Null
+
+# Copy backend
+$BackendDest = Join-Path $OUTPUT_DIR "backend"
+New-Item -ItemType Directory -Path $BackendDest | Out-Null
+
+Write-Host "Copying backend files..."
+# Copy all files except excluded ones
+$excludeItems = @("node_modules", ".git", ".env", "storage", "laravel.log", "vendor")
+Get-ChildItem $BACKEND_DIR | Where-Object { $excludeItems -notcontains $_.Name } | ForEach-Object {
+    Write-Host "  Copying: $($_.Name)"
+    Copy-Item $_.FullName -Destination $BackendDest -Recurse -Force
+}
+
+# Verify public directory was copied
+$publicDest = Join-Path $BackendDest "public"
+if (Test-Path $publicDest) {
+    Write-Host "✓ Public directory copied successfully" -ForegroundColor Green
+    $uploadsDest = Join-Path $publicDest "uploads"
+    if (Test-Path $uploadsDest) {
+        Write-Host "✓ Uploads directory exists in public" -ForegroundColor Green
+    } else {
+        Write-Host "⚠ Uploads directory NOT found in public!" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "✗ Public directory NOT copied!" -ForegroundColor Red
+}
+
+# Create storage structure
+# Create storage structure
+New-Item -ItemType Directory -Path (Join-Path $BackendDest "storage/app/public") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $BackendDest "storage/app/backups") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $BackendDest "storage/framework/cache") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $BackendDest "storage/framework/sessions") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $BackendDest "storage/framework/views") -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $BackendDest "storage/logs") -Force | Out-Null
+
+# Copy storage/app/public contents (Sliders, Menus, etc.)
+$StoragePublicSource = Join-Path $BACKEND_DIR "storage/app/public"
+if (Test-Path $StoragePublicSource) {
+    Write-Host "Copying storage/app/public files..."
+    Copy-Item -Path "$StoragePublicSource\*" -Destination (Join-Path $BackendDest "storage/app/public") -Recurse -Force
+}
+
+# Ensure public/uploads directories exist (they should already be copied, but make sure)
+Write-Host "Ensuring public/uploads directories exist..."
+$UploadDirs = @(
+    "public/uploads",
+    "public/uploads/settings",
+    "public/uploads/posts",
+    "public/uploads/categories",
+    "public/uploads/products",
+    "public/uploads/projects",
+    "public/uploads/sliders",
+    "public/uploads/menus"
+)
+foreach ($dir in $UploadDirs) {
+    $fullPath = Join-Path $BackendDest $dir
+    if (-not (Test-Path $fullPath)) {
+        New-Item -ItemType Directory -Path $fullPath -Force | Out-Null
+        Write-Host "  Created: $dir"
+    } else {
+        Write-Host "  Exists: $dir"
+    }
+}
+
+# Create .htaccess for uploads directory if not exists
+$HtaccessPath = Join-Path $BackendDest "public/uploads/.htaccess"
+if (-not (Test-Path $HtaccessPath)) {
+    $HtaccessContent = @"
+<IfModule mod_rewrite.c>
+    RewriteEngine Off
+</IfModule>
+
+<FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|pdf)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+"@
+    Set-Content -Path $HtaccessPath -Value $HtaccessContent -Force
+    Write-Host "  Created .htaccess for uploads"
+}
+
+# Frontend build is configured to output directly to ../backend/public
+# So we don't need to copy from dist.
+# The subsequent copy of 'backend' to 'deploy_temp/backend' will include the built assets.
+Write-Host "Frontend built to backend/public."
+
+# Copy deploy.php
+Copy-Item (Join-Path $PSScriptRoot "deploy.php") -Destination $OUTPUT_DIR
+
+# Copy setup-uploads.sh script for production
+$SetupScript = Join-Path $PSScriptRoot "scripts/setup-uploads.sh"
+if (Test-Path $SetupScript) {
+    Copy-Item $SetupScript -Destination $OUTPUT_DIR
+    Write-Host "Copied setup-uploads.sh script"
+}
+
+# Create a README for deployment
+$ReadmeContent = @"
+# Alkana Coating Deployment Package
+
+## Quick Start
+
+1. Upload this entire folder to your hosting
+2. Run the deployment script:
+   - For cPanel: Access http://yourdomain.com/deploy.php
+   - For SSH access: Run the commands below
+
+## After Deployment - Important!
+
+### Fix Upload Permissions (Required for image uploads)
+
+**Option 1: Via SSH**
+``````bash
+cd public_html/backend  # or wherever you deployed
+php scripts/fix_upload_permissions.php
+``````
+
+Or:
+``````bash
+bash ../setup-uploads.sh
+``````
+
+**Option 2: Via cPanel File Manager**
+- Set permissions for 'public/uploads' and all subdirectories to 755
+- Set ownership to your web server user (usually 'nobody' or your cPanel username)
+
+**Option 3: Via FTP**
+- Right-click on 'public/uploads' folder
+- Change permissions to 755 (rwxr-xr-x)
+- Apply to all subdirectories
+
+### Verify Upload Directories Exist:
+- backend/public/uploads/settings
+- backend/public/uploads/posts
+- backend/public/uploads/categories
+- backend/public/uploads/products
+- backend/public/uploads/projects
+- backend/public/uploads/sliders
+- backend/public/uploads/menus
+
+## Troubleshooting
+
+If uploads still fail:
+1. Check disk space: df -h
+2. Check PHP settings in php.ini:
+   - upload_max_filesize = 16M
+   - post_max_size = 16M
+3. Check .env file has correct APP_URL
+4. Check web server error logs
+
+For detailed documentation, see: docs/deployment/UPLOAD_FIX.md
+"@
+$ReadmePath = Join-Path $OUTPUT_DIR "DEPLOYMENT_README.txt"
+Set-Content -Path $ReadmePath -Value $ReadmeContent -Force
+Write-Host "Created deployment README"
+
+# 4. Create Zip
+Write-Host "4. Creating zip package..." -ForegroundColor Cyan
+if (Test-Path $ZIP_FILE) { Remove-Item $ZIP_FILE -Force }
+Compress-Archive -Path "$OUTPUT_DIR\*" -DestinationPath $ZIP_FILE -Force
+
+# Cleanup
+Remove-Item $OUTPUT_DIR -Recurse -Force
+
+Write-Host "---------------------------------------------------" -ForegroundColor Green
+Write-Host "Package created successfully: $ZIP_FILE" -ForegroundColor Green
+Write-Host "---------------------------------------------------" -ForegroundColor Green
+Write-Host ""
+Write-Host "Deployment Instructions:" -ForegroundColor Yellow
+Write-Host "1. Upload 'alkana-coating.zip' to your hosting"
+Write-Host "2. Extract the zip file"
+Write-Host "3. Access http://yourdomain.com/deploy.php to run deployment"
+Write-Host ""
+Write-Host "IMPORTANT - After deployment:" -ForegroundColor Red
+Write-Host "Run this command to fix upload permissions:" -ForegroundColor Yellow
+Write-Host "  php backend/scripts/fix_upload_permissions.php"
+Write-Host "Or via SSH:"
+Write-Host "  bash setup-uploads.sh"
+Write-Host ""
+Write-Host "Package includes:" -ForegroundColor Cyan
+Write-Host "  - Backend with all dependencies"
+Write-Host "  - Frontend build (in backend/public)"
+Write-Host "  - Database export (alkanacoating_production.sql)"
+Write-Host "  - Upload directories pre-created"
+Write-Host "  - Deploy script (deploy.php)"
+Write-Host "  - Setup script (setup-uploads.sh)"
+Write-Host "  - Deployment instructions (DEPLOYMENT_README.txt)"
+Write-Host ""

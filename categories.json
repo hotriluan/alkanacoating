@@ -1,0 +1,50 @@
+﻿{
+    "success":  true,
+    "data":  [
+                 {
+                     "id":  5,
+                     "name":  "Chống ăn mòn",
+                     "slug":  "chong-an-mon"
+                 },
+                 {
+                     "id":  3,
+                     "name":  "Phủ Polyurethane (PU)",
+                     "slug":  "phu-polyurethane"
+                 },
+                 {
+                     "id":  6,
+                     "name":  "Phủ Polyurethane (PU)",
+                     "slug":  "phu-polyurethane-pu"
+                 },
+                 {
+                     "id":  2,
+                     "name":  "Sơn Chống Ăn Mòn",
+                     "slug":  "son-chong-an-mon"
+                 },
+                 {
+                     "id":  7,
+                     "name":  "Sơn công nghiệp",
+                     "slug":  "son-cong-nghiep"
+                 },
+                 {
+                     "id":  4,
+                     "name":  "Sơn Công Nghiệp Đặc Biệt",
+                     "slug":  "son-cong-nghiep-dac-biet"
+                 },
+                 {
+                     "id":  8,
+                     "name":  "Sơn Epoxy",
+                     "slug":  "son-epoxy"
+                 },
+                 {
+                     "id":  1,
+                     "name":  "Sơn Epoxy Sàn",
+                     "slug":  "son-epoxy-san"
+                 },
+                 {
+                     "id":  9,
+                     "name":  "Sơn PU",
+                     "slug":  "son-pu"
+                 }
+             ]
+}

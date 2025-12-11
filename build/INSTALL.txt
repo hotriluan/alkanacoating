@@ -1,0 +1,41 @@
+===========================================
+ALKANA COATING - HƯỚNG DẪN CÀI ĐẶT
+===========================================
+
+BƯỚC 1: UPLOAD FILES
+--------------------
+1. Upload toàn bộ nội dung thư mục này lên hosting
+2. Đảm bảo file deploy.php ở thư mục root
+
+BƯỚC 2: CHẠY INSTALLER
+----------------------
+1. Truy cập: http://yourdomain.com/deploy.php
+2. Làm theo wizard:
+   - Upload/xác nhận file ZIP
+   - Giải nén
+   - Nhập thông tin database
+   - Cấu hình website
+   - Chạy migration
+   - Hoàn thành!
+
+BƯỚC 3: CẤU HÌNH WEB SERVER
+---------------------------
+Frontend (React):
+- Document Root: /path/to/frontend
+- Rewrite: Tất cả requests -> index.html
+
+Backend API (Laravel):
+- Document Root: /path/to/backend/public
+- Rewrite: Tất cả requests -> index.php
+
+BƯỚC 4: SAU KHI CÀI ĐẶT
+-----------------------
+1. Xóa deploy.php để bảo mật
+2. Set quyền cho directories
+3. Set quyền cho storage/ và uploads/
+
+YÊU CẦU HỆ THỐNG:
+-----------------
+- PHP >= 8.1
+- MySQL >= 5.7
+- Extensions: PDO, PDO_MySQL, GD/Imagick, Fileinfo, ZipArchive
